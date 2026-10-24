@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.github
+.vscode
+dist
+build
+.env
+.env.local
+*.log
+apps/api/dev.db
+apps/api/dev.db-journal
+apps/api/tests
+coverage

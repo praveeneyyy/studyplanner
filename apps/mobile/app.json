@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "AI Study Planner",
+    "slug": "ai-smart-study-planner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#FAF9F6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aistudy.planner"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2D5A27"
+      },
+      "package": "com.aistudy.planner"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "scheme": "aistudy"
+  }
+}

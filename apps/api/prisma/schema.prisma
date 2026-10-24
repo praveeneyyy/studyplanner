@@ -1,0 +1,398 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                    String                 @id @default(cuid())
+  email                 String                 @unique
+  passwordHash          String
+  fullName              String
+  academicLevel         String?
+  institution           String?
+  avatarUrl             String?
+  totalXP               Int                    @default(0)
+  currentLevel          Int                    @default(1)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+
+  preferences           UserPreference?
+  subjects              Subject[]
+  studyPlans            StudyPlan[]
+  notes                 Note[]
+  flashcards            Flashcard[]
+  aiConversations       AIConversation[]
+  quizAttempts          QuizAttempt[]
+  rewardLedgerEntries   RewardLedgerEntry[]
+  achievements          UserAchievement[]
+  streaks               UserStreak[]
+  weeklyGoals           WeeklyGoal[]
+  notifications         NotificationRecord[]
+  notificationPref      NotificationPreference?
+  aiUsageRecords        AIUsageRecord[]
+}
+
+model UserPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme                 String   @default("system")
+  timezone              String   @default("UTC")
+  dailyStudyMinutesGoal Int      @default(120)
+  sessionDurationPref   Int      @default(45)
+  breakDurationPref     Int      @default(10)
+  weeklyAvailability    String   @default("{\"mon\":180,\"tue\":180,\"wed\":180,\"thu\":180,\"fri\":180,\"sat\":240,\"sun\":240}")
+  reducedMotion         Boolean  @default(false)
+  soundEffects          Boolean  @default(true)
+  hapticFeedback        Boolean  @default(true)
+  updatedAt             DateTime @updatedAt
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyReminders        Boolean  @default(true)
+  revisionAlerts        Boolean  @default(true)
+  examCountdowns        Boolean  @default(true)
+  weeklyProgressEmail   Boolean  @default(false)
+  quietHoursStart       String   @default("22:00")
+  quietHoursEnd         String   @default("08:00")
+}
+
+model Subject {
+  id                    String         @id @default(cuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                  String
+  code                  String?
+  colorToken            String         @default("cs")
+  priority              Int            @default(3)
+  archived              Boolean        @default(false)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  examinations          Examination[]
+  units                 SyllabusUnit[]
+  notes                 Note[]
+}
+
+model Examination {
+  id                    String      @id @default(cuid())
+  subjectId             String
+  subject               Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title                 String
+  examDate              DateTime
+  weightagePercent      Int         @default(100)
+  targetScorePercent    Int         @default(85)
+  completed             Boolean     @default(false)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  studyPlans            StudyPlan[]
+}
+
+model SyllabusUnit {
+  id                    String    @id @default(cuid())
+  subjectId             String
+  subject               Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  unitNumber            Int       @default(1)
+  title                 String
+  description           String?
+  orderIndex            Int       @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  topics                Topic[]
+}
+
+model Topic {
+  id                    String            @id @default(cuid())
+  unitId                String
+  unit                  SyllabusUnit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String?
+  estimatedMinutes      Int               @default(45)
+  difficulty            Int               @default(3)
+  importance            Int               @default(3)
+  confidence            Int               @default(1)
+  status                String            @default("NOT_STARTED")
+  orderIndex            Int               @default(0)
+  lastStudiedAt         DateTime?
+  nextRevisionDate      DateTime?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  progressRecords       TopicProgress[]
+  studySessions         StudySession[]
+  revisionRecords       RevisionRecord[]
+  quizQuestions         QuizQuestion[]
+  flashcards            Flashcard[]
+  notes                 Note[]
+}
+
+model TopicProgress {
+  id                    String    @id @default(cuid())
+  topicId               String
+  topic                 Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  status                String    @default("NOT_STARTED")
+  confidence            Int       @default(1)
+  masteryScore          Float     @default(0.0)
+  totalStudyMinutes     Int       @default(0)
+  lastReviewedAt        DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model StudyPlan {
+  id                    String         @id @default(cuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examinationId         String?
+  examination           Examination?   @relation(fields: [examinationId], references: [id], onDelete: SetNull)
+  title                 String
+  startDate             DateTime
+  targetEndDate         DateTime
+  isActive              Boolean        @default(true)
+  totalPlannedMinutes   Int            @default(0)
+  completedMinutes      Int            @default(0)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  sessions              StudySession[]
+}
+
+model StudySession {
+  id                    String       @id @default(cuid())
+  studyPlanId           String
+  studyPlan             StudyPlan    @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  topicId               String
+  topic                 Topic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  scheduledStart        DateTime
+  scheduledEnd          DateTime
+  actualStart           DateTime?
+  actualEnd             DateTime?
+  durationMinutes       Int          @default(45)
+  actualDurationMinutes Int          @default(0)
+  status                String       @default("PLANNED")
+  sessionType           String       @default("LEARN")
+  notes                 String?
+  reflectionScore       Int?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+}
+
+model RevisionRecord {
+  id                    String    @id @default(cuid())
+  topicId               String
+  topic                 Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  reviewDate            DateTime  @default(now())
+  recallRating          Int
+  repetitionNumber      Int       @default(1)
+  easeFactor            Float     @default(2.5)
+  intervalDays          Int       @default(1)
+  nextScheduledReview   DateTime
+  createdAt             DateTime  @default(now())
+}
+
+model Quiz {
+  id                    String         @id @default(cuid())
+  title                 String
+  difficulty            Int            @default(3)
+  timeLimitSeconds      Int?
+  isGeneratedByAI       Boolean        @default(false)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  questions             QuizQuestion[]
+  attempts              QuizAttempt[]
+}
+
+model QuizQuestion {
+  id                    String         @id @default(cuid())
+  quizId                String
+  quiz                  Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  topicId               String?
+  topic                 Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  questionType          String         @default("MCQ")
+  prompt                String
+  options               String?
+  correctAnswer         String
+  explanation           String
+  orderIndex            Int            @default(0)
+
+  responses             QuizResponse[]
+}
+
+model QuizAttempt {
+  id                    String         @id @default(cuid())
+  quizId                String
+  quiz                  Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scorePercent          Float          @default(0.0)
+  totalQuestions        Int            @default(0)
+  correctAnswers        Int            @default(0)
+  completedAt           DateTime       @default(now())
+
+  responses             QuizResponse[]
+}
+
+model QuizResponse {
+  id                    String        @id @default(cuid())
+  attemptId             String
+  attempt               QuizAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId            String
+  question              QuizQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  studentAnswer         String
+  isCorrect             Boolean
+  pointsAwarded         Float         @default(0.0)
+  feedback              String?
+}
+
+model Note {
+  id                    String         @id @default(cuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId             String?
+  subject               Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  topicId               String?
+  topic                 Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  title                 String
+  contentMarkdown       String
+  tags                  String?
+  isAiGenerated         Boolean        @default(false)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
+model Flashcard {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId               String?
+  topic                 Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  frontText             String
+  backText              String
+  boxNumber             Int       @default(1)
+  lastReviewedAt        DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model AIConversation {
+  id                    String         @id @default(cuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                 String         @default("Study Conversation")
+  subjectContext        String?
+  topicContext          String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  messages              AIMessage[]
+}
+
+model AIMessage {
+  id                    String         @id @default(cuid())
+  conversationId        String
+  conversation          AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender                String
+  content               String
+  formatType            String?
+  providerUsed          String?
+  isFallback            Boolean        @default(false)
+  createdAt             DateTime       @default(now())
+}
+
+model AIUsageRecord {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider              String
+  modelName             String
+  promptTokens          Int       @default(0)
+  completionTokens      Int       @default(0)
+  durationMs            Int       @default(0)
+  createdAt             DateTime  @default(now())
+}
+
+model RewardLedgerEntry {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventType             String
+  sourceEventId         String
+  xpAwarded             Int
+  description           String
+  createdAt             DateTime  @default(now())
+
+  @@unique([userId, eventType, sourceEventId])
+}
+
+model AchievementDefinition {
+  id                    String            @id
+  title                 String
+  description           String
+  badgeIcon             String
+  category              String
+  xpReward              Int               @default(50)
+  requiredMetric        String
+  
+  userAchievements      UserAchievement[]
+}
+
+model UserAchievement {
+  id                    String                @id @default(cuid())
+  userId                String
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId         String
+  achievement           AchievementDefinition @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt            DateTime              @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+model UserStreak {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateString            String
+  qualifyingMinutes     Int
+  sessionsCompleted     Int
+  createdAt             DateTime  @default(now())
+
+  @@unique([userId, dateString])
+}
+
+model WeeklyGoal {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStartDate         String
+  targetStudyMinutes    Int       @default(600)
+  completedMinutes      Int       @default(0)
+  targetSessions        Int       @default(10)
+  completedSessions     Int       @default(0)
+  isAchieved            Boolean   @default(false)
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([userId, weekStartDate])
+}
+
+model NotificationRecord {
+  id                    String    @id @default(cuid())
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                 String
+  body                  String
+  type                  String
+  isRead                Boolean   @default(false)
+  scheduledFor          DateTime
+  deliveredAt           DateTime?
+  createdAt             DateTime  @default(now())
+}

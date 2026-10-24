@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-study-planner:latest
+    container_name: ai_study_planner
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=file:/app/apps/api/data/prod.db
+      - JWT_SECRET=${JWT_SECRET}
+      - HF_TOKEN=${HF_TOKEN}
+      - HF_MODEL_ID=${HF_MODEL_ID:-Qwen/Qwen3-4B-Instruct-2507}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      - study_data:/app/apps/api/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  study_data:
+    driver: local

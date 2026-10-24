@@ -19,7 +19,7 @@ import type {
 } from '@ai-study/shared-schemas';
 
 export interface ApiClientConfig {
-  baseUrl: string;
+  baseUrl?: string;
   getToken?: () => string | null | Promise<string | null>;
   onUnauthorized?: () => void;
 }
@@ -29,8 +29,11 @@ export class ApiClient {
   private getToken?: () => string | null | Promise<string | null>;
   private onUnauthorized?: () => void;
 
-  constructor(config: ApiClientConfig) {
-    this.baseUrl = config.baseUrl.replace(/\/$/, '');
+  constructor(config: ApiClientConfig = {}) {
+    const rawUrl =
+      config.baseUrl ||
+      (typeof process !== 'undefined' && process.env?.API_URL ? process.env.API_URL : '/api/v1');
+    this.baseUrl = rawUrl.replace(/\/$/, '');
     this.getToken = config.getToken;
     this.onUnauthorized = config.onUnauthorized;
   }

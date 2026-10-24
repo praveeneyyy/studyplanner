@@ -1,6 +1,8 @@
 import { ApiClient } from '@ai-study/api-client';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof process !== 'undefined' && process.env?.API_URL ? `${process.env.API_URL}/api/v1` : '/api/v1');
 
 export const api = new ApiClient({
   baseUrl: API_BASE_URL,

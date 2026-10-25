@@ -4,8 +4,9 @@ node_modules/
 .pnp.js
 
 # Production builds
-dist/
-build/
+/dist/
+/apps/*/dist/
+/build/
 .expo/
 .output/
 

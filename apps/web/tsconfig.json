@@ -17,11 +17,16 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@ai-study/api-client": ["../../packages/api-client/src/index.ts"],
-      "@ai-study/design-tokens": ["../../packages/design-tokens/src/index.ts"],
-      "@ai-study/domain": ["../../packages/domain/src/index.ts"],
-      "@ai-study/shared-schemas": ["../../packages/shared-schemas/src/index.ts"]
+      "@ai-study/api-client": ["../../packages/api-client/src/index", "../../packages/api-client/dist/index"],
+      "@ai-study/api-client/*": ["../../packages/api-client/src/*", "../../packages/api-client/dist/*"],
+      "@ai-study/design-tokens": ["../../packages/design-tokens/src/index", "../../packages/design-tokens/dist/index"],
+      "@ai-study/design-tokens/*": ["../../packages/design-tokens/src/*", "../../packages/design-tokens/dist/*"],
+      "@ai-study/domain": ["../../packages/domain/src/index", "../../packages/domain/dist/index"],
+      "@ai-study/domain/*": ["../../packages/domain/src/*", "../../packages/domain/dist/*"],
+      "@ai-study/shared-schemas": ["../../packages/shared-schemas/src/index", "../../packages/shared-schemas/dist/index"],
+      "@ai-study/shared-schemas/*": ["../../packages/shared-schemas/src/*", "../../packages/shared-schemas/dist/*"],
+      "@ai-study/*": ["../../packages/*/src/index", "../../packages/*/dist/index"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "../../packages/*/dist/index.d.ts"]
 }

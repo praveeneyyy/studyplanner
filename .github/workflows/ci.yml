@@ -24,14 +24,23 @@ jobs:
       - name: Install Monorepo Dependencies
         run: npm ci
 
-      - name: Generate Prisma Client
-        run: npm run db:generate --workspace=@ai-study/api
+      - name: Generate Prisma Client & Migrate Database
+        run: |
+          npm run db:generate --workspace=@ai-study/api
+          npm run db:push --workspace=@ai-study/api
+          npm run db:seed --workspace=@ai-study/api
+        env:
+          DATABASE_URL: "file:./dev.db"
+          JWT_SECRET: "super_secret_ai_smart_study_planner_jwt_key_2026_xyz"
 
       - name: Run Domain & Scheduling Engine Unit Tests
         run: npm test --workspace=@ai-study/domain
 
       - name: Run Backend Integration & API Tests
         run: npm test --workspace=@ai-study/api
+        env:
+          DATABASE_URL: "file:./dev.db"
+          JWT_SECRET: "super_secret_ai_smart_study_planner_jwt_key_2026_xyz"
 
       - name: Compile Production Web Assets
         run: npm run build --workspace=@ai-study/web

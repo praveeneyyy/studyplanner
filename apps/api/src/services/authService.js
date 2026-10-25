@@ -92,7 +92,7 @@ export class AuthService {
       throw err;
     }
 
-    const user = await prisma.user.findFirst({
+    let user = await prisma.user.findFirst({
       where: {
         OR: [
           { email: targetEmail },
@@ -103,10 +103,31 @@ export class AuthService {
     });
 
     if (!user) {
-      const err = new Error(`Scholar account for ${scholar} not initialized.`);
-      err.statusCode = 404;
-      err.code = 'USER_NOT_FOUND';
-      throw err;
+      const defaultHash = await bcrypt.hash('Scholar2026!', 10);
+      user = await prisma.user.create({
+        data: {
+          email: targetEmail,
+          passwordHash: defaultHash,
+          fullName: scholarKey.charAt(0).toUpperCase() + scholarKey.slice(1),
+          academicLevel: scholarKey === 'swetha' ? 'Undergraduate (Computer Science)' : 'Undergraduate (Electrical Engineering)',
+          institution: 'Institute of Technology',
+          totalXP: 320,
+          currentLevel: 2,
+          preferences: {
+            create: {
+              theme: 'system',
+              timezone: 'UTC',
+              dailyStudyMinutesGoal: 150,
+              sessionDurationPref: 45,
+              breakDurationPref: 10
+            }
+          },
+          notificationPref: {
+            create: {}
+          }
+        },
+        include: { preferences: true }
+      });
     }
 
     const token = jwt.sign({ userId: user.id }, config.jwtSecret, { expiresIn: '7d' });

@@ -131,7 +131,7 @@ export function AITutorPage() {
         topicId: selectedTopicId || undefined
       },
       {
-        onDelta: (chunk) => {
+        onDelta: (chunk: string) => {
           setMessages((prev) => {
             const updated = [...prev];
             const last = updated[updated.length - 1];
@@ -145,7 +145,7 @@ export function AITutorPage() {
           setIsStreaming(false);
           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         },
-        onError: (err) => {
+        onError: (err: any) => {
           console.error(err);
           setIsStreaming(false);
         }

@@ -138,13 +138,13 @@ export function SessionWorkspacePage() {
         topicId: session?.topicId
       },
       {
-        onDelta: (chunk) => {
+        onDelta: (chunk: string) => {
           setAiResponse((prev) => prev + chunk);
         },
         onDone: () => {
           setAiStreaming(false);
         },
-        onError: (err) => {
+        onError: (err: any) => {
           console.error(err);
           setAiStreaming(false);
         }

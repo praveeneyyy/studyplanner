@@ -14,7 +14,14 @@
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ai-study/api-client": ["../../packages/api-client/src/index.ts"],
+      "@ai-study/design-tokens": ["../../packages/design-tokens/src/index.ts"],
+      "@ai-study/domain": ["../../packages/domain/src/index.ts"],
+      "@ai-study/shared-schemas": ["../../packages/shared-schemas/src/index.ts"]
+    }
   },
   "include": ["src"]
 }

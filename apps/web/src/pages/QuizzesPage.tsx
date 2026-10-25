@@ -81,7 +81,7 @@ export function QuizzesPage() {
           formatType: 'QUIZ'
         },
         {
-          onDelta: (chunk) => {
+          onDelta: (chunk: string) => {
             generatedText += chunk;
           },
           onDone: () => {

@@ -8,7 +8,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Install build prerequisites
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache openssl python3 make g++
 
 # Copy package manifests for all workspaces
 COPY package*.json ./

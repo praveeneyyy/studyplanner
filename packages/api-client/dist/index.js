@@ -6,7 +6,8 @@ export class ApiClient {
     getToken;
     onUnauthorized;
     constructor(config = {}) {
-        const rawUrl = config.baseUrl || (typeof process !== 'undefined' && process.env?.API_URL ? process.env.API_URL : '/api/v1');
+        const rawUrl = config.baseUrl ||
+            (typeof process !== 'undefined' && process.env?.API_URL ? process.env.API_URL : '/api/v1');
         this.baseUrl = rawUrl.replace(/\/$/, '');
         this.getToken = config.getToken;
         this.onUnauthorized = config.onUnauthorized;

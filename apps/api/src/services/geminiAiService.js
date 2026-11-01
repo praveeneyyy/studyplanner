@@ -26,8 +26,12 @@ export class GeminiAIService {
       throw new Error('Gemini API key is not configured.');
     }
 
-    const model = 'gemini-1.5-flash';
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const candidateModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-3.8-flash',
+      'gemini-2.5-flash',
+      'gemini-flash-latest'
+    ].filter(Boolean);
 
     const formattedContents = [];
     if (Array.isArray(history)) {
@@ -56,31 +60,49 @@ export class GeminiAIService {
       }
     };
 
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+    let lastError = null;
+    for (const model of candidateModels) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API error (${res.status}): ${errText}`);
+        if (!res.ok) {
+          const errText = await res.text();
+          // If model is not found on this endpoint, cascade to next candidate model
+          if (res.status === 404 || errText.includes('NOT_FOUND')) {
+            lastError = new Error(`Gemini ${model} not found: ${errText}`);
+            continue;
+          }
+          throw new Error(`Gemini API error (${res.status}): ${errText}`);
+        }
+
+        const data = await res.json();
+        const candidate = data.candidates?.[0];
+        const text = candidate?.content?.parts?.map((p) => p.text).join('') || '';
+
+        if (!text.trim()) {
+          throw new Error('Gemini API returned an empty completion.');
+        }
+
+        return {
+          answer: text.trim(),
+          model,
+          provider: 'google-gemini'
+        };
+      } catch (err) {
+        lastError = err;
+        if (!err.message?.includes('not found') && !err.message?.includes('404')) {
+          throw err;
+        }
+      }
     }
 
-    const data = await res.json();
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.map((p) => p.text).join('') || '';
-
-    if (!text.trim()) {
-      throw new Error('Gemini API returned an empty completion.');
-    }
-
-    return {
-      answer: text.trim(),
-      model,
-      provider: 'google-gemini'
-    };
+    throw lastError || new Error('All candidate Gemini models failed.');
   }
 }

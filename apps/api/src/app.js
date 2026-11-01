@@ -65,15 +65,19 @@ app.use(limiter);
 
 app.use(express.json({ limit: '10mb' }));
 
-// Health check
-app.get('/api/v1/health', (req, res) => {
+// Health check endpoints (supports Render /healthz, /health, and /api/v1/health)
+const healthHandler = (req, res) => {
   res.json({
     status: 'healthy',
     product: 'AI Smart Study Planner',
     version: '1.0.0',
     timestamp: new Date().toISOString()
   });
-});
+};
+
+app.get('/healthz', healthHandler);
+app.get('/health', healthHandler);
+app.get('/api/v1/health', healthHandler);
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);

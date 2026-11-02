@@ -860,62 +860,18 @@ ${concept}
 It ensures you can find, insert, or process what you need with minimum effort and zero wasted memory!`;
 
       case 'CODE':
-        return `### Implementation: ${title} in ${detectedLang.toUpperCase()}
-
-Here is the clean, fully documented, production-ready implementation:
-
-\`\`\`${detectedLang}
+        return `\`\`\`${detectedLang}
 ${codeSnippet}
-\`\`\`
-
-#### Complexity Breakdown:
-- **Time Complexity:** ${timeComplexity || 'O(1) amortized'}
-- **Space Complexity:** ${spaceComplexity || 'O(n)'}
-
-#### Code Notes:
-- Idiomatic practices for **${detectedLang.toUpperCase()}** are strictly maintained.
-- Edge cases (null inputs, empty data) are safeguarded to prevent runtime exceptions.`;
+\`\`\``;
 
       case 'SHORT_NOTES':
-        return `### ${title} — High-Yield Revision Sheet
-
-• **Core Definition:** ${concept}
-• **Time Complexity:** ${timeComplexity || 'O(1) to O(log n)'}
-• **Space Complexity:** ${spaceComplexity || 'O(n)'}
-• **High-Yield Terms:** Invariant, Asymptotic Complexity, State Bounds, Garbage Collection
-• **Top Applications:**
-${(useCases || ['Software architecture', 'Algorithm design']).map((u) => `  - ${u}`).join('\n')}
-• **Exam Tip:** Always state base cases and avoid integer overflow when calculating midpoints.`;
+        return `${concept}\n\nKey points:\n${(useCases || []).map((u) => `- ${u}`).join('\n')}`;
 
       case 'EXPLAIN':
       default:
-        return `### ${title} — Comprehensive Academic Overview
-
-${concept}
-
----
-
-#### 1. Core Mechanics & Mathematical Bounds
-- **Time Complexity:** ${timeComplexity || 'O(log n) typical'}
-- **Space Complexity:** ${spaceComplexity || 'O(n) auxiliary'}
-- **Operational Principle:** Decouples high-level access patterns from underlying hardware constraints.
-
----
-
-#### 2. Working Implementation (${detectedLang.toUpperCase()})
-\`\`\`${detectedLang}
-${codeSnippet}
-\`\`\`
-
----
-
-#### 3. Real-World Applications
-${(useCases || ['Backend server pipelines', 'Operating system schedulers', 'Algorithm competitive programming']).map((u, i) => `${i + 1}. **${u}**`).join('\n')}
-
----
-
-#### 4. Summary & Best Practices
-When working with **${title}**, ensure all boundary conditions (empty inputs, single items, negative values) are validated. For university exams, always specify both time and space complexity with formal Big-O notation.`;
+        return codeSnippet && codeSnippet.trim()
+          ? `${concept}\n\n\`\`\`${detectedLang}\n${codeSnippet}\n\`\`\``
+          : concept;
     }
   }
 

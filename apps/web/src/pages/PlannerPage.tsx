@@ -277,17 +277,17 @@ export function PlannerPage() {
         subtitle="Adaptive database schedule"
       />
 
-      <div className="p-6 max-w-6xl w-full mx-auto space-y-4">
+      <div className="p-3 sm:p-6 max-w-6xl w-full mx-auto space-y-4">
         {/* Page Title & Notion Icon */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-2xl">
-              <CalendarIcon size={24} className="text-app-text" />
-              <h1 className="text-2xl font-bold tracking-tight text-app-text">Study Plan</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xl sm:text-2xl">
+              <CalendarIcon size={24} className="text-app-text shrink-0" />
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-app-text">Study Plan</h1>
             </div>
 
             {/* Top Primary Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <button
                 onClick={async () => {
                   try {

@@ -28,6 +28,7 @@ import {
   Plus,
   Code2,
   LayoutGrid,
+  X,
   LucideIcon
 } from 'lucide-react';
 import { SvgRepoAcademicCap } from '../ui/SvgRepoIcons';
@@ -38,6 +39,10 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   badge?: string;
+}
+
+export interface SidebarProps {
+  onCloseMobile?: () => void;
 }
 
 const PRIMARY_WORKSPACE_ITEMS: NavItem[] = [
@@ -57,7 +62,7 @@ const SECONDARY_WORKSPACE_ITEMS: NavItem[] = [
   { to: '/analytics', label: 'Custom Dashboards', icon: LayoutDashboard }
 ];
 
-export function Sidebar() {
+export function Sidebar({ onCloseMobile }: SidebarProps = {}) {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const location = useLocation();
@@ -81,11 +86,16 @@ export function Sidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const handleNavClick = (to: string) => {
+    navigate(to);
+    onCloseMobile?.();
+  };
+
   return (
     <>
       <aside
-        className={`h-screen sticky top-0 bg-app-sidebar border-r border-app-borderSubtle flex flex-col transition-all duration-200 select-none z-30 ${
-          collapsed ? 'w-14' : 'w-60'
+        className={`h-screen sticky top-0 bg-app-sidebar border-r border-app-borderSubtle flex flex-col transition-all duration-200 select-none z-30 w-72 max-w-[85vw] md:w-60 ${
+          collapsed ? 'md:w-14' : 'md:w-60'
         }`}
       >
         {/* Workspace Identity Bar */}
@@ -93,7 +103,7 @@ export function Sidebar() {
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
               <div
-                onClick={() => navigate('/dashboard')}
+                onClick={() => handleNavClick('/dashboard')}
                 className="flex items-center gap-2 hover:bg-app-hover px-1.5 py-1 rounded cursor-pointer transition-colors max-w-[170px]"
                 title="Academic Workspace"
               >
@@ -107,16 +117,35 @@ export function Sidebar() {
                 </div>
                 <ChevronDown size={13} className="text-app-muted flex-shrink-0 ml-0.5" />
               </div>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="p-1 text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors"
-                title="Collapse sidebar"
-              >
-                <ChevronsLeft size={15} />
-              </button>
+              <div className="flex items-center gap-1">
+                {/* Mobile Drawer Close Button */}
+                <button
+                  onClick={onCloseMobile}
+                  className="md:hidden p-1 text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors"
+                  title="Close menu"
+                  aria-label="Close menu"
+                >
+                  <X size={16} />
+                </button>
+                {/* Desktop Collapse Button */}
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="hidden md:inline-flex p-1 text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors"
+                  title="Collapse sidebar"
+                >
+                  <ChevronsLeft size={15} />
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="w-full flex justify-center py-1">
+            <div className="w-full flex justify-between md:justify-center items-center py-1">
+              <button
+                onClick={onCloseMobile}
+                className="md:hidden p-1 text-app-muted hover:text-app-text"
+                title="Close menu"
+              >
+                <X size={16} />
+              </button>
               <button
                 onClick={() => setCollapsed(false)}
                 className="p-1.5 text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors"

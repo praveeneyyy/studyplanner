@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { DashboardProvider } from './context/DashboardContext';
+import { LayoutProvider } from './context/LayoutContext';
 import { AppLayout } from './components/layout/AppLayout';
 
 import { LoginPage } from './pages/LoginPage';
@@ -39,35 +40,37 @@ export function App() {
         <AuthProvider>
           <DashboardProvider>
             <BrowserRouter>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/onboarding" element={<OnboardingPage />} />
+              <LayoutProvider>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/onboarding" element={<OnboardingPage />} />
 
-                {/* Professional Multi-Language Student IDE */}
-                <Route path="/ide" element={<IDEPage />} />
-                <Route path="/editor" element={<IDEPage />} />
+                  {/* Professional Multi-Language Student IDE */}
+                  <Route path="/ide" element={<IDEPage />} />
+                  <Route path="/editor" element={<IDEPage />} />
 
-                {/* Protected Workspace Routes */}
-                <Route element={<AppLayout />}>
-                  <Route path="/dashboard" element={<HomePage />} />
-                  <Route path="/home" element={<HomePage />} />
-                  <Route path="/tools" element={<ToolsPage />} />
-                  <Route path="/analytics" element={<AnalyticsDashboardPage />} />
-                  <Route path="/subjects" element={<SubjectsPage />} />
-                  <Route path="/planner" element={<PlannerPage />} />
-                  <Route path="/notes" element={<NotesPage />} />
-                  <Route path="/session/:id" element={<SessionWorkspacePage />} />
-                  <Route path="/ai" element={<AITutorPage />} />
-                  <Route path="/revision" element={<RevisionPage />} />
-                  <Route path="/quizzes" element={<QuizzesPage />} />
-                  <Route path="/rewards" element={<RewardsPage />} />
-                  <Route path="/universe" element={<UniversePage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                </Route>
-              </Routes>
+                  {/* Protected Workspace Routes */}
+                  <Route element={<AppLayout />}>
+                    <Route path="/dashboard" element={<HomePage />} />
+                    <Route path="/home" element={<HomePage />} />
+                    <Route path="/tools" element={<ToolsPage />} />
+                    <Route path="/analytics" element={<AnalyticsDashboardPage />} />
+                    <Route path="/subjects" element={<SubjectsPage />} />
+                    <Route path="/planner" element={<PlannerPage />} />
+                    <Route path="/notes" element={<NotesPage />} />
+                    <Route path="/session/:id" element={<SessionWorkspacePage />} />
+                    <Route path="/ai" element={<AITutorPage />} />
+                    <Route path="/revision" element={<RevisionPage />} />
+                    <Route path="/quizzes" element={<QuizzesPage />} />
+                    <Route path="/rewards" element={<RewardsPage />} />
+                    <Route path="/universe" element={<UniversePage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  </Route>
+                </Routes>
+              </LayoutProvider>
             </BrowserRouter>
           </DashboardProvider>
         </AuthProvider>

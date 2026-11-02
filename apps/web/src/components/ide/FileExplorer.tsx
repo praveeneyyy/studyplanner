@@ -107,7 +107,7 @@ export function FileExplorer({
   };
 
   return (
-    <div className="w-56 h-full border-r border-app-borderSubtle bg-app-sidebar flex flex-col select-none text-xs">
+    <div className="w-full lg:w-56 h-full border-r border-app-borderSubtle bg-app-sidebar flex flex-col select-none text-xs">
       {/* Sidebar Header */}
       <div className="p-2.5 px-3 border-b border-app-borderSubtle flex items-center justify-between">
         <span className="font-semibold tracking-wider text-[11px] text-app-muted uppercase">

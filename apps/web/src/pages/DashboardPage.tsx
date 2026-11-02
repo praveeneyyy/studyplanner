@@ -290,22 +290,22 @@ export function DashboardPage() {
           <p className="text-xs text-app-muted">{activeDashboard.description}</p>
 
           {/* Notion Properties Grid */}
-          <div className="border-y border-app-borderSubtle py-2 space-y-1 text-xs">
-            <div className="flex items-center gap-6">
-              <span className="w-24 text-app-subtle">Course Focus</span>
-              <span className="notion-tag notion-tag-blue">
+          <div className="border-y border-app-borderSubtle py-2 space-y-1.5 sm:space-y-1 text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
+              <span className="w-24 text-app-subtle shrink-0">Course Focus</span>
+              <span className="notion-tag notion-tag-blue self-start sm:self-auto">
                 {activeDashboard.subjectFilter === 'ALL' ? 'All Enrolled Subjects' : activeDashboard.subjectFilter}
               </span>
             </div>
-            <div className="flex items-center gap-6">
-              <span className="w-24 text-app-subtle">Daily Target</span>
-              <span className="notion-tag notion-tag-green">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
+              <span className="w-24 text-app-subtle shrink-0">Daily Target</span>
+              <span className="notion-tag notion-tag-green self-start sm:self-auto">
                 {activeDashboard.dailyTargetMinutes || 120} minutes ({Math.round(((activeDashboard.dailyTargetMinutes || 120) / 60) * 10) / 10}h)
               </span>
             </div>
-            <div className="flex items-center gap-6">
-              <span className="w-24 text-app-subtle">Target Exam</span>
-              <span className="notion-tag notion-tag-red">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
+              <span className="w-24 text-app-subtle shrink-0">Target Exam</span>
+              <span className="notion-tag notion-tag-red self-start sm:self-auto">
                 {nearestExam ? `${nearestExam.title} in ${nearestExam.daysLeft}d` : 'No upcoming exam'}
               </span>
             </div>

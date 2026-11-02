@@ -24,6 +24,7 @@ interface OutputPanelProps {
   onAskAIToFix: (diagnostic: ErrorDiagnostic) => void;
   stdin: string;
   onStdinChange: (val: string) => void;
+  fullHeight?: boolean;
 }
 
 type TabType = 'output' | 'problems' | 'terminal' | 'tests';
@@ -35,7 +36,8 @@ export function OutputPanel({
   onSelectDiagnosticLine,
   onAskAIToFix,
   stdin,
-  onStdinChange
+  onStdinChange,
+  fullHeight = false
 }: OutputPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('output');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -55,7 +57,7 @@ export function OutputPanel({
   return (
     <div
       className={`border-t border-app-borderSubtle bg-app-sidebar flex flex-col transition-all duration-200 select-none ${
-        isCollapsed ? 'h-9' : isExpanded ? 'h-96' : 'h-64'
+        fullHeight ? 'h-full flex-1 border-t-0' : isCollapsed ? 'h-9' : isExpanded ? 'h-96' : 'h-64'
       }`}
     >
       {/* Panel Top Tab Bar */}

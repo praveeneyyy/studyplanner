@@ -50,6 +50,7 @@ export function AITutorPage() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showMobileHistory, setShowMobileHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -194,15 +195,38 @@ export function AITutorPage() {
         subtitle="16 exam-oriented answer formats"
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Conversation Index Sidebar */}
-        <div className="w-56 border-r border-app-borderSubtle bg-app-sidebar/50 hidden md:flex flex-col select-none">
-          <div className="p-2 border-b border-app-borderSubtle">
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile History Backdrop */}
+        {showMobileHistory && (
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-30 md:hidden"
+            onClick={() => setShowMobileHistory(false)}
+          />
+        )}
+
+        {/* Left Conversation Index Sidebar (Static on desktop, slide-over drawer on mobile) */}
+        <div
+          className={`w-64 max-w-[80vw] border-r border-app-borderSubtle bg-app-sidebar z-40 md:z-auto flex flex-col select-none transition-transform duration-200 ${
+            showMobileHistory
+              ? 'fixed inset-y-0 left-0 shadow-xl md:static md:shadow-none'
+              : 'hidden md:flex md:w-56'
+          }`}
+        >
+          <div className="p-2 border-b border-app-borderSubtle flex items-center justify-between">
             <button
-              onClick={handleNewConversation}
-              className="w-full py-1.5 px-2.5 rounded border border-app-borderSubtle bg-app-surface hover:bg-app-hover text-xs font-medium text-app-text flex items-center justify-center gap-1.5 transition-colors"
+              onClick={() => {
+                handleNewConversation();
+                setShowMobileHistory(false);
+              }}
+              className="flex-1 py-1.5 px-2.5 rounded border border-app-borderSubtle bg-app-surface hover:bg-app-hover text-xs font-medium text-app-text flex items-center justify-center gap-1.5 transition-colors"
             >
               <Plus size={13} /> New Discussion
+            </button>
+            <button
+              onClick={() => setShowMobileHistory(false)}
+              className="md:hidden p-1 ml-1 text-app-muted hover:text-app-text rounded"
+            >
+              ✕
             </button>
           </div>
 
@@ -211,7 +235,10 @@ export function AITutorPage() {
             {conversations.map((c) => (
               <button
                 key={c.id}
-                onClick={() => selectConversation(c.id)}
+                onClick={() => {
+                  selectConversation(c.id);
+                  setShowMobileHistory(false);
+                }}
                 className={`w-full text-left px-2 py-1.5 rounded text-xs truncate flex items-center gap-2 transition-colors ${
                   activeConvId === c.id
                     ? 'bg-app-hover text-app-text font-medium'
@@ -228,7 +255,7 @@ export function AITutorPage() {
         {/* Main Conversation Canvas */}
         <div className="flex-1 flex flex-col bg-app-surface overflow-hidden">
           {notice && (
-            <div className="notion-callout text-xs text-app-text mx-4 mt-2">
+            <div className="notion-callout text-xs text-app-text mx-3 sm:mx-4 mt-2">
               <Sparkles size={14} className="text-amber-500 shrink-0" />
               <div className="flex-1 flex items-center justify-between">
                 <span>{notice}</span>
@@ -239,14 +266,23 @@ export function AITutorPage() {
             </div>
           )}
 
-          {/* Context Selector & Model Info */}
-          <div className="p-2 px-6 border-b border-app-borderSubtle flex flex-wrap items-center justify-between gap-3 bg-app-sidebar/30 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-app-subtle">Topic Context:</span>
+          {/* Context Selector & Model Info Bar */}
+          <div className="p-2 px-3 sm:px-6 border-b border-app-borderSubtle flex flex-wrap items-center justify-between gap-2 bg-app-sidebar/30 text-xs">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setShowMobileHistory(true)}
+                className="md:hidden flex items-center gap-1 px-2 py-1 rounded border border-app-borderSubtle bg-app-surface text-[11px] text-app-text font-medium"
+                title="View discussion history"
+              >
+                <MessageSquare size={12} />
+                <span>Discussions ({conversations.length})</span>
+              </button>
+
+              <span className="text-app-subtle hidden sm:inline">Topic Context:</span>
               <select
                 value={selectedTopicId}
                 onChange={(e) => setSelectedTopicId(e.target.value)}
-                className="bg-app-surface border border-app-borderSubtle rounded px-2 py-0.5 text-xs text-app-text outline-none cursor-pointer"
+                className="bg-app-surface border border-app-borderSubtle rounded px-2 py-1 text-xs text-app-text outline-none cursor-pointer max-w-[160px] sm:max-w-xs truncate"
               >
                 <option value="">General Academic Context</option>
                 {allTopics.map((t) => (

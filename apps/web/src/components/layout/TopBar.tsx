@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Flame, Play, Bell, Search, Share2, MoreHorizontal } from 'lucide-react';
+import { useLayout } from '../../context/LayoutContext';
+import { Flame, Play, Bell, Search, Share2, MoreHorizontal, Menu } from 'lucide-react';
 import { LearningProgressOrb } from '../3d/LearningProgressOrb';
 
 interface TopBarProps {
@@ -13,6 +14,7 @@ interface TopBarProps {
 
 export function TopBar({ breadcrumbs, title, subtitle, onOpenSearch }: TopBarProps) {
   const { user } = useAuth();
+  const { toggleMobileNav } = useLayout();
   const navigate = useNavigate();
 
   const userWorkspaceName = user?.fullName ? `${user.fullName}'s Workspace` : 'Workspace';
@@ -26,64 +28,87 @@ export function TopBar({ breadcrumbs, title, subtitle, onOpenSearch }: TopBarPro
   });
 
   return (
-    <header className="h-11 px-4 bg-app-surface border-b border-app-borderSubtle flex items-center justify-between sticky top-0 z-20 select-none">
-      {/* Breadcrumb Path */}
-      <div className="flex items-center gap-1.5 text-xs text-app-muted overflow-hidden">
-        {formattedBreadcrumbs && formattedBreadcrumbs.length > 0 ? (
-          formattedBreadcrumbs.map((crumb, idx) => (
-            <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-app-subtle">/</span>}
-              {crumb.to ? (
-                <button
-                  onClick={() => navigate(crumb.to!)}
-                  className="hover:text-app-text hover:underline truncate max-w-[140px]"
-                >
-                  {crumb.label}
-                </button>
-              ) : (
-                <span className="text-app-text font-medium truncate max-w-[180px]">
-                  {crumb.label}
-                </span>
-              )}
-            </React.Fragment>
-          ))
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <span className="text-app-muted">Workspace</span>
-            <span className="text-app-subtle">/</span>
-            <span className="text-app-text font-medium">{title || 'Academic Space'}</span>
-          </div>
-        )}
-        {subtitle && (
-          <span className="hidden md:inline-block text-[11px] text-app-subtle ml-2 pl-2 border-l border-app-borderSubtle">
-            {subtitle}
-          </span>
-        )}
-      </div>
+    <header className="h-11 px-3 sm:px-4 bg-app-surface border-b border-app-borderSubtle flex items-center justify-between sticky top-0 z-20 select-none">
+      {/* Mobile Hamburger Menu & Breadcrumb Path */}
+      <div className="flex items-center gap-1.5 text-xs text-app-muted overflow-hidden flex-1 min-w-0 mr-2">
+        {/* Mobile Navigation Drawer Toggle */}
+        <button
+          onClick={toggleMobileNav}
+          className="md:hidden p-1.5 -ml-1 text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors flex-shrink-0"
+          title="Open menu"
+          aria-label="Open menu"
+        >
+          <Menu size={16} />
+        </button>
 
-      {/* Right Controls */}
-      <div className="flex items-center gap-2">
-        {/* Streak Counter */}
-        <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
-          <Flame size={12} className="fill-amber-500 text-amber-500" />
-          <span>Active Streak</span>
+        {/* Desktop & Tablet Breadcrumb Path */}
+        <div className="hidden sm:flex items-center gap-1.5 overflow-hidden">
+          {formattedBreadcrumbs && formattedBreadcrumbs.length > 0 ? (
+            formattedBreadcrumbs.map((crumb, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span className="text-app-subtle">/</span>}
+                {crumb.to ? (
+                  <button
+                    onClick={() => navigate(crumb.to!)}
+                    className="hover:text-app-text hover:underline truncate max-w-[120px] md:max-w-[160px]"
+                  >
+                    {crumb.label}
+                  </button>
+                ) : (
+                  <span className="text-app-text font-medium truncate max-w-[140px] md:max-w-[200px]">
+                    {crumb.label}
+                  </span>
+                )}
+              </React.Fragment>
+            ))
+          ) : (
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-app-muted">Workspace</span>
+              <span className="text-app-subtle">/</span>
+              <span className="text-app-text font-medium truncate">{title || 'Academic Space'}</span>
+            </div>
+          )}
+          {subtitle && (
+            <span className="hidden lg:inline-block text-[11px] text-app-subtle ml-2 pl-2 border-l border-app-borderSubtle truncate">
+              {subtitle}
+            </span>
+          )}
         </div>
 
-        {/* Blender 3D Progress Gem & XP Indicator */}
+        {/* Mobile Single Title View */}
+        <div className="sm:hidden flex items-center truncate">
+          <span className="text-app-text font-medium truncate text-xs">
+            {formattedBreadcrumbs && formattedBreadcrumbs.length > 0
+              ? formattedBreadcrumbs[formattedBreadcrumbs.length - 1].label
+              : (title || 'Academic Space')}
+          </span>
+        </div>
+      </div>
+
+      {/* Right Responsive Controls */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        {/* Streak Counter */}
+        <div className="flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+          <Flame size={12} className="fill-amber-500 text-amber-500" />
+          <span className="hidden sm:inline">Active Streak</span>
+          <span className="sm:hidden">Active</span>
+        </div>
+
+        {/* Progress Orb & XP Indicator */}
         <div
           onClick={() => navigate('/rewards')}
-          className="flex items-center gap-1.5 px-2 py-0.5 rounded border border-app-borderSubtle hover:bg-app-hover cursor-pointer transition-colors"
+          className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 rounded border border-app-borderSubtle hover:bg-app-hover cursor-pointer transition-colors"
           title="Productivity XP and Achievements"
         >
-          <div className="w-5 h-5 flex items-center justify-center">
-            <LearningProgressOrb size={20} />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
+            <LearningProgressOrb size={16} />
           </div>
           <span className="text-[11px] font-medium text-app-text tabular-nums">
             {user?.totalXP || 0} XP
           </span>
         </div>
 
-        {/* Quick Search Shortcut */}
+        {/* Quick Search Shortcut (Desktop) */}
         <button
           onClick={onOpenSearch}
           className="hidden sm:flex items-center gap-1 px-2 py-1 text-xs text-app-muted hover:text-app-text hover:bg-app-hover rounded transition-colors"
@@ -95,10 +120,10 @@ export function TopBar({ breadcrumbs, title, subtitle, onOpenSearch }: TopBarPro
         {/* Start Session Action Button */}
         <button
           onClick={() => navigate('/planner')}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-app-text text-app-bg hover:opacity-90 text-xs font-medium transition-opacity"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded bg-app-text text-app-bg hover:opacity-90 text-xs font-medium transition-opacity"
         >
           <Play size={11} className="fill-current" />
-          <span>Start Session</span>
+          <span className="hidden xs:inline sm:inline">Study</span>
         </button>
       </div>
     </header>

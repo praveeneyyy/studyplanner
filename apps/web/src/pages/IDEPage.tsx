@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Code2, Terminal, Sparkles, Folder } from 'lucide-react';
 import { api } from '../lib/api';
 import { IDETopBar } from '../components/ide/IDETopBar';
 import { FileExplorer } from '../components/ide/FileExplorer';
@@ -76,6 +77,9 @@ export function IDEPage() {
   const [aiMessages, setAiMessages] = useState<AIChatMessage[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Responsive Mobile/Tablet Active Pane: 'editor' | 'terminal' | 'ai' | 'files'
+  const [mobilePane, setMobilePane] = useState<'editor' | 'terminal' | 'ai' | 'files'>('editor');
+
   // Active File lookup
   const activeFile = files.find((f) => f.id === activeFileId) || files[0] || DEFAULT_FILES[0];
   const activeLangConfig = LANGUAGE_REGISTRY[activeFile.language] || LANGUAGE_REGISTRY.python;
@@ -136,6 +140,11 @@ export function IDEPage() {
   // Run Code Action
   const handleRunCode = async () => {
     if (isRunning) return;
+
+    // On mobile devices, automatically flip to the console view so student sees output instantly
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobilePane('terminal');
+    }
 
     setIsRunning(true);
     setExecutionResult(null);
@@ -234,6 +243,9 @@ export function IDEPage() {
       setOpenTabIds((prev) => [...prev, fileId]);
     }
     setActiveFileId(fileId);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobilePane('editor');
+    }
   };
 
   // AI Agent: Apply suggested code directly into Monaco editor
@@ -315,6 +327,9 @@ export function IDEPage() {
   // Ask AI to fix a specific problem from Problems tab
   const handleAskAIToFixProblem = (diag: ErrorDiagnostic) => {
     setIsAIPanelOpen(true);
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setMobilePane('ai');
+    }
     handleSendAIMessage(
       `Please explain and fix the ${diag.category} on line ${diag.line}: "${diag.technicalMessage}".`,
       'fix'
@@ -340,30 +355,106 @@ export function IDEPage() {
         onStopAIStreaming={handleStopAIStreaming}
       />
 
-      {/* 2. Main Workspace Layout */}
+      {/* 2. Mobile / Tablet Pane Selector Bar (Hidden on Desktop) */}
+      <div className="lg:hidden flex items-center border-b border-app-borderSubtle bg-app-surface text-xs font-medium select-none overflow-x-auto flex-shrink-0">
+        <button
+          onClick={() => setMobilePane('editor')}
+          className={`flex-1 py-2 px-3 text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            mobilePane === 'editor'
+              ? 'border-app-accent text-app-text font-semibold bg-app-hover/40'
+              : 'border-transparent text-app-muted hover:text-app-text'
+          }`}
+        >
+          <Code2 size={13} />
+          <span>Editor</span>
+        </button>
+
+        <button
+          onClick={() => setMobilePane('terminal')}
+          className={`flex-1 py-2 px-3 text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            mobilePane === 'terminal'
+              ? 'border-app-accent text-app-text font-semibold bg-app-hover/40'
+              : 'border-transparent text-app-muted hover:text-app-text'
+          }`}
+        >
+          <Terminal size={13} />
+          <span>Console</span>
+          {executionResult && (
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                executionResult.success ? 'bg-emerald-500' : 'bg-red-500'
+              }`}
+            />
+          )}
+        </button>
+
+        <button
+          onClick={() => {
+            setMobilePane('ai');
+            setIsAIPanelOpen(true);
+          }}
+          className={`flex-1 py-2 px-3 text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            mobilePane === 'ai'
+              ? 'border-app-accent text-app-text font-semibold bg-app-hover/40'
+              : 'border-transparent text-app-muted hover:text-app-text'
+          }`}
+        >
+          <Sparkles size={13} className="text-app-accent" />
+          <span>AI Tutor</span>
+          {isAIStreaming && (
+            <span className="w-1.5 h-1.5 rounded-full bg-app-accent animate-ping" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setMobilePane('files')}
+          className={`flex-1 py-2 px-3 text-center border-b-2 flex items-center justify-center gap-1.5 transition-colors ${
+            mobilePane === 'files'
+              ? 'border-app-accent text-app-text font-semibold bg-app-hover/40'
+              : 'border-transparent text-app-muted hover:text-app-text'
+          }`}
+        >
+          <Folder size={13} />
+          <span>Files</span>
+        </button>
+      </div>
+
+      {/* 3. Main Workspace Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: File Explorer Sidebar */}
-        <FileExplorer
-          files={files}
-          activeFileId={activeFile.id}
-          onSelectFile={handleSelectTab}
-          onCreateFile={handleCreateFile}
-          onDeleteFile={handleDeleteFile}
-          onRenameFile={handleRenameFile}
-        />
+        {/* Left: File Explorer Sidebar (Visible on desktop, or on mobile when 'files' pane is active) */}
+        <div className={`h-full ${mobilePane === 'files' ? 'w-full block lg:w-56' : 'hidden lg:block'}`}>
+          <FileExplorer
+            files={files}
+            activeFileId={activeFile.id}
+            onSelectFile={handleSelectTab}
+            onCreateFile={handleCreateFile}
+            onDeleteFile={handleDeleteFile}
+            onRenameFile={handleRenameFile}
+          />
+        </div>
 
         {/* Center: Editor Canvas & Output Terminal */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Editor Tabs Strip */}
-          <EditorTabs
-            files={files.filter((f) => openTabIds.includes(f.id))}
-            activeFileId={activeFile.id}
-            onSelectTab={setActiveFileId}
-            onCloseTab={handleCloseTab}
-          />
+        <div
+          className={`flex-1 flex-col min-w-0 overflow-hidden ${
+            mobilePane === 'editor' ? 'flex' : mobilePane === 'terminal' ? 'flex lg:flex' : 'hidden lg:flex'
+          }`}
+        >
+          {/* Editor Tabs Strip (Always visible in editor mode, or on desktop) */}
+          <div className={`${mobilePane === 'terminal' ? 'hidden lg:block' : 'block'}`}>
+            <EditorTabs
+              files={files.filter((f) => openTabIds.includes(f.id))}
+              activeFileId={activeFile.id}
+              onSelectTab={setActiveFileId}
+              onCloseTab={handleCloseTab}
+            />
+          </div>
 
-          {/* Monaco Code Editor */}
-          <div className="flex-1 relative overflow-hidden">
+          {/* Monaco Code Editor (Visible in editor mode, or on desktop) */}
+          <div
+            className={`flex-1 relative overflow-hidden ${
+              mobilePane === 'terminal' ? 'hidden lg:block' : 'block'
+            }`}
+          >
             <CodeEditor
               value={activeFile.content}
               language={activeLangConfig.monacoLanguage}
@@ -373,33 +464,52 @@ export function IDEPage() {
             />
           </div>
 
-          {/* Output & Diagnostics Panel */}
-          <OutputPanel
-            result={executionResult}
-            isRunning={isRunning}
-            onClearOutput={() => setExecutionResult(null)}
-            onSelectDiagnosticLine={(line) => setTargetLine(line)}
-            onAskAIToFix={handleAskAIToFixProblem}
-            stdin={stdin}
-            onStdinChange={setStdin}
-          />
+          {/* Output & Diagnostics Panel (Visible in terminal mode with fullHeight, or on desktop bottom strip) */}
+          <div
+            className={`${
+              mobilePane === 'terminal' ? 'flex-1 h-full block' : mobilePane === 'editor' ? 'hidden lg:block' : 'hidden lg:block'
+            }`}
+          >
+            <OutputPanel
+              result={executionResult}
+              isRunning={isRunning}
+              onClearOutput={() => setExecutionResult(null)}
+              onSelectDiagnosticLine={(line) => {
+                setTargetLine(line);
+                setMobilePane('editor');
+              }}
+              onAskAIToFix={handleAskAIToFixProblem}
+              stdin={stdin}
+              onStdinChange={setStdin}
+              fullHeight={mobilePane === 'terminal'}
+            />
+          </div>
         </div>
 
-        {/* Right: Dedicated AI Agent Side Panel */}
-        <AIAgentSidePanel
-          isOpen={isAIPanelOpen}
-          onClose={() => setIsAIPanelOpen(false)}
-          language={activeFile.language}
-          code={activeFile.content}
-          output={`${executionResult?.stdout || ''}\n${executionResult?.stderr || ''}`.trim()}
-          diagnostic={executionResult?.diagnostic || null}
-          onApplyCode={handleApplyAICode}
-          isStreaming={isAIStreaming}
-          onStopStreaming={handleStopAIStreaming}
-          onSendMessage={handleSendAIMessage}
-          messages={aiMessages}
-          onClearMessages={() => setAiMessages([])}
-        />
+        {/* Right: Dedicated AI Agent Side Panel (Visible when AI is open and in 'ai' pane on mobile, or on desktop) */}
+        <div
+          className={`h-full ${
+            mobilePane === 'ai' ? 'w-full block lg:w-[420px]' : isAIPanelOpen ? 'hidden lg:block' : 'hidden'
+          }`}
+        >
+          <AIAgentSidePanel
+            isOpen={isAIPanelOpen || mobilePane === 'ai'}
+            onClose={() => {
+              setIsAIPanelOpen(false);
+              setMobilePane('editor');
+            }}
+            language={activeFile.language}
+            code={activeFile.content}
+            output={`${executionResult?.stdout || ''}\n${executionResult?.stderr || ''}`.trim()}
+            diagnostic={executionResult?.diagnostic || null}
+            onApplyCode={handleApplyAICode}
+            isStreaming={isAIStreaming}
+            onStopStreaming={handleStopAIStreaming}
+            onSendMessage={handleSendAIMessage}
+            messages={aiMessages}
+            onClearMessages={() => setAiMessages([])}
+          />
+        </div>
       </div>
     </div>
   );
